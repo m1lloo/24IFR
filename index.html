@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>24IFR Clearance Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #0f0f0f;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .card {
+      background-color: #1b1b1b;
+      border-radius: 15px;
+      padding: 35px 30px;
+      width: 100%;
+      max-width: 650px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      color: #fff;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+    }
+
+    h2 {
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 30px;
+      color: #00bfff;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+      color: #ccc;
+    }
+
+    input, textarea {
+      background-color: #242424;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      width: 100%;
+      transition: border-color 0.2s ease;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #00bfff;
+      box-shadow: 0 0 8px rgba(0,191,255,0.3);
+    }
+
+    .btn-primary {
+      background: #00bfff;
+      border: none;
+      padding: 12px;
+      font-weight: 700;
+      width: 100%;
+      font-size: 1rem;
+      border-radius: 10px;
+      margin-top: 15px;
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+    .btn-primary:hover {
+      background: #0099cc;
+      transform: translateY(-2px);
+    }
+
+    .btn-discord {
+      background-color: #7289da;
+      color: white;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .btn-discord:hover {
+      background-color: #5b6eae;
+      transform: translateY(-2px);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    #output {
+      font-family: monospace;
+      background-color: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 10px;
+      min-height: 120px;
+      resize: none;
+      padding: 12px;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>24IFR Clearance Generator</h2>
+
+    <div class="form-group">
+      <label for="fpInput">Flight Plan Info</label>
+      <textarea id="fpInput" placeholder="Discord: @user&#10;Roblox: username&#10;Callsign: XXX&#10;Aircraft: B787&#10;Flight Rules: IFR&#10;Departing: IRFD&#10;Arriving: ITKO&#10;Route: N/A&#10;Flight Level: 040" rows="6"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="atisAirport">ATIS Airport ICAO</label>
+      <input type="text" id="atisAirport" placeholder="e.g., IRFD">
+    </div>
+    <div class="form-group">
+      <label for="atisLetter">ATIS Info Letter</label>
+      <input type="text" id="atisLetter" placeholder="e.g., G">
+    </div>
+    <div class="form-group">
+      <label for="depRunways">Departure Runways (comma-separated)</label>
+      <input type="text" id="depRunways" placeholder="e.g., 7C, 7L, 7R">
+    </div>
+    <div class="form-group">
+      <label for="arrRunways">Arrival Runways (comma-separated)</label>
+      <input type="text" id="arrRunways" placeholder="e.g., 7L, 7C, 7R">
+    </div>
+    <div class="form-group">
+      <label for="depFreq">Departure Frequency</label>
+      <input type="text" id="depFreq" placeholder="e.g., 118.100 or Tower">
+    </div>
+
+    <button class="btn btn-primary" id="generateBtn">Generate IFR Clearance</button>
+
+    <div class="form-group mt-3">
+      <label for="output">Generated IFR Clearance</label>
+      <textarea id="output" readonly></textarea>
+    </div>
+
+    <a href="https://discord.gg/TEtM5DVbRa" target="_blank" class="btn-discord">💬 Join the Discord</a>
+  </div>
+
+  <script>
+    function getInitialClimbMinutes(fl) {
+      return fl > 30 ? 4 : 2;
+    }
+
+    function generateSquawk() {
+      return Math.floor(1000 + Math.random() * 9000);
+    }
+
+    function pickRunway(runways, aircraftType) {
+      const runwayArray = runways.split(',').map(r => r.trim()).filter(r => r);
+      if(runwayArray.length === 0) return 'UNKNOWN';
+      return runwayArray[Math.floor(Math.random() * runwayArray.length)];
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const fp = document.getElementById('fpInput').value;
+
+      const callsignMatch = fp.match(/Callsign:\s*(.+)/i);
+      const aircraftMatch = fp.match(/Aircraft:\s*(.+)/i);
+      const flMatch = fp.match(/Flight Level:\s*(\d+)/i);
+      const depMatch = fp.match(/Departing:\s*(.+)/i);
+      const arrMatch = fp.match(/Arriving:\s*(.+)/i);
+      const routeMatch = fp.match(/Route:\s*(.+)/i);
+
+      if (!callsignMatch || !aircraftMatch || !flMatch || !depMatch || !arrMatch || !routeMatch) {
+        document.getElementById('output').value = 'Invalid flight plan format.';
+        return;
+      }
+
+      const callsign = callsignMatch[1].trim();
+      const aircraft = aircraftMatch[1].trim();
+      const fl = parseInt(flMatch[1], 10);
+      const depAirport = depMatch[1].trim();
+      const arrAirport = arrMatch[1].trim();
+      const route = routeMatch[1].trim() === 'N/A' ? 'radar vectors' : routeMatch[1].trim();
+      const flFeet = fl * 100;
+      const initialClimbMin = getInitialClimbMinutes(fl);
+      const squawk = generateSquawk();
+
+      const atisAirport = document.getElementById('atisAirport').value || depAirport;
+      const atisLetter = document.getElementById('atisLetter').value || 'X';
+      const depRunways = document.getElementById('depRunways').value || '';
+      const arrRunways = document.getElementById('arrRunways').value || '';
+      const depFreq = document.getElementById('depFreq').value || 'Tower';
+
+      const departureRunway = pickRunway(depRunways, aircraft);
+
+      const output = `${callsign}, ${atisAirport} Clearance, Cleared to ${arrAirport} via ${route},
+maintain ${flFeet} feet, expect FL${fl.toString().padStart(3,'0')} ${initialClimbMin} minutes after departure,
+departure runway ${departureRunway}, departure frequency ${depFreq},
+squawk ${squawk}
+Advise you have Information ${atisLetter} on board.`;
+
+      document.getElementById('output').value = output;
+    });
+  </script>
+</body>
+</html>
