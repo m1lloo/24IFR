@@ -107,9 +107,26 @@
       padding: 12px;
       color: #fff;
     }
+
+    select {
+      background-color: #242424;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      width: 100%;
+      transition: border-color 0.2s ease;
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #00bfff;
+      box-shadow: 0 0 8px rgba(0,191,255,0.3);
+    }
   </style>
 </head>
-
 
 <!-- Update Detector  -->
 <div id="updateModal" 
@@ -125,7 +142,7 @@
     <p style="color: #ddd; font-size: 0.95rem; margin-bottom: 20px;">
       A new version of 24IFR is available.<br>
       Please refresh the page to continue.<br>
-	  Apologies for any disruption :-)
+      Apologies for any disruption :-)
     </p>
     <button onclick="location.reload(true);" 
             style="background:#00bfff; border:none; 
@@ -137,7 +154,7 @@
 </div>
 
 <script>
-  const CURRENT_VERSION = "0.0.1"; 
+  const CURRENT_VERSION = "0.1.0"; 
 
   async function checkVersion() {
     try {
@@ -152,12 +169,8 @@
     }
   }
 
-
   setInterval(checkVersion, 5000);
 </script>
-
-
-
 
 <body>
   <div class="card">
@@ -170,12 +183,71 @@
 
     <div class="form-group">
       <label for="atisAirport">ATIS Airport ICAO</label>
-      <input type="text" id="atisAirport" placeholder="e.g., IRFD">
+      <select id="atisAirport">
+        <option value="">Select Airport</option>
+
+        <optgroup label="Rockford">
+          <option value="IRFD">IRFD — Rockford</option>
+          <option value="IMLR">IMLR — Mellor</option>
+          <option value="IGAR">IGAR — Garry</option>
+          <option value="IBLT">IBLT — Boltic</option>
+          <option value="ITRC">ITRC — Training Centre</option>
+        </optgroup>
+
+        <optgroup label="Cyprus">
+          <option value="ILAR">ILAR — Larnaca</option>
+          <option value="IPAP">IPAP — Paphos</option>
+          <option value="IIAB">IIAB — McConnell</option>
+          <option value="IHEN">IHEN — Henstridge</option>
+          <option value="IBAR">IBAR — Barra</option>
+        </optgroup>
+
+        <optgroup label="Izolirani">
+          <option value="IZOL">IZOL — Izolirani</option>
+          <option value="IJAF">IJAF — Al Najaf</option>
+          <option value="ISCM">ISCM — Scampton</option>
+        </optgroup>
+
+        <optgroup label="Orenji">
+          <option value="ITKO">ITKO — Tokyo</option>
+          <option value="IDCS">IDCS — Saba</option>
+        </optgroup>
+
+        <optgroup label="Perth">
+          <option value="IPPH">IPPH — Perth</option>
+          <option value="ILKL">ILKL — Lukla</option>
+        </optgroup>
+
+        <optgroup label="Saint Barthélemy">
+          <option value="IBTH">IBTH — Saint Barthélemy</option>
+          <option value="ISKP">ISKP — Skopelos</option>
+        </optgroup>
+
+        <optgroup label="Grindavik">
+          <option value="IGRV">IGRV — Grindavik</option>
+        </optgroup>
+
+        <optgroup label="Sauthemptona">
+          <option value="ISAU">ISAU — Sauthemptona</option>
+        </optgroup>
+
+      </select>
     </div>
+
     <div class="form-group">
       <label for="atisLetter">ATIS Info Letter</label>
-      <input type="text" id="atisLetter" placeholder="e.g., G">
+      <select id="atisLetter">
+        <option value="">Select Letter</option>
+        <option>A</option><option>B</option><option>C</option><option>D</option>
+        <option>E</option><option>F</option><option>G</option><option>H</option>
+        <option>I</option><option>J</option><option>K</option><option>L</option>
+        <option>M</option><option>N</option><option>O</option><option>P</option>
+        <option>Q</option><option>R</option><option>S</option><option>T</option>
+        <option>U</option><option>V</option><option>W</option><option>X</option>
+        <option>Y</option><option>Z</option>
+      </select>
     </div>
+
     <div class="form-group">
       <label for="depRunways">Departure Runways (comma-separated)</label>
       <input type="text" id="depRunways" placeholder="e.g., 7C, 7L, 7R">
@@ -184,9 +256,12 @@
       <label for="arrRunways">Arrival Runways (comma-separated)</label>
       <input type="text" id="arrRunways" placeholder="e.g., 7L, 7C, 7R">
     </div>
+
     <div class="form-group">
       <label for="depFreq">Departure Frequency</label>
-      <input type="text" id="depFreq" placeholder="e.g., 118.100 or Tower">
+      <select id="depFreq">
+        <option value="">Select a frequency</option>
+      </select>
     </div>
 
     <button class="btn btn-primary" id="generateBtn">Generate IFR Clearance</button>
@@ -200,8 +275,68 @@
   </div>
 
   <script>
+    const frequencies = {
+      IRFD: ["IRCC 124.850", "IRFD_TWR 118.100"],
+      IMLR: ["IRCC 124.850", "IMLR_TWR 133.850"],
+      IGAR: ["IRCC 124.850", "IGAR_TWR 125.600"],
+      IBLT: ["IRCC 124.850", "IBLT_TWR 120.250"],
+      ITRC: ["IRCC 124.850", "ITRC_TWR 119.150"],
+
+      ILAR: ["ICCC 126.300", "ILAR_TWR 121.200"],
+      IPAP: ["ICCC 126.300", "IPAP_TWR 119.900"],
+      IIAB: ["ICCC 126.300", "IIAB_TWR 127.250"],
+      IHEN: ["ICCC 126.300", "IHEN_TWR 130.000"],
+      IBAR: ["ICCC 126.300", "IBAR_TWR 118.750"],
+
+      IZOL: ["IZCC 125.650", "IZOL_TWR 118.700"],
+      IJAF: ["IZCC 125.650", "IJAF_TWR 119.100"],
+      ISCM: ["IZCC 125.650", "ISCM_TWR 121.300"],
+
+      ITKO: ["IOCC 132.300", "ITKO_TWR 118.800"],
+      IDCS: ["IOCC 132.300", "IDCS_TWR 118.250"],
+
+      IPPH: ["IPCC 135.250", "IPPH_TWR 127.400"],
+      ILKL: ["IPCC 135.250", "ILKL_TWR 120.000"],
+
+      IBTH: ["IBCC 128.600", "IBTH_TWR 118.700"],
+      ISKP: ["IBCC 128.600", "ISKP_TWR 123.250"],
+
+      IGRV: ["IGCC 126.750", "IGRV_TWR 118.300"],
+
+      ISAU: ["ISCC 127.825", "ISAU_TWR 118.200"]
+    };
+
+    const atisAirportSelect = document.getElementById("atisAirport");
+    const depFreqSelect = document.getElementById("depFreq");
+
+    function updateDepartureFrequencies() {
+      const airport = atisAirportSelect.value.trim();
+      depFreqSelect.innerHTML = '<option value="">Select a frequency</option>';
+
+      if (!airport || !frequencies[airport]) return;
+
+      frequencies[airport].forEach(freq => {
+        const opt = document.createElement("option");
+        opt.value = freq;
+        opt.textContent = freq;
+        depFreqSelect.appendChild(opt);
+      });
+    }
+
+    atisAirportSelect.addEventListener("change", updateDepartureFrequencies);
+
+    function getInitialAltitude(fl) {
+      // Initial climb altitude: 2000 for jets, 1000 for lower FL
+      return fl > 30 ? 2000 : 1000;
+    }
+
     function getInitialClimbMinutes(fl) {
-      return fl > 30 ? 4 : 2;
+      // Return 1–5 minutes depending on FL
+      if (fl < 20) return 1;
+      if (fl < 40) return 2;
+      if (fl < 60) return 3;
+      if (fl < 80) return 4;
+      return 5;
     }
 
     function generateSquawk() {
@@ -235,7 +370,7 @@
       const depAirport = depMatch[1].trim();
       const arrAirport = arrMatch[1].trim();
       const route = routeMatch[1].trim() === 'N/A' ? 'radar vectors' : routeMatch[1].trim();
-      const flFeet = fl * 100;
+      const initialAltitude = getInitialAltitude(fl);
       const initialClimbMin = getInitialClimbMinutes(fl);
       const squawk = generateSquawk();
 
@@ -248,7 +383,7 @@
       const departureRunway = pickRunway(depRunways, aircraft);
 
       const output = `${callsign}, ${atisAirport} Clearance, Cleared to ${arrAirport} via ${route},
-maintain ${flFeet} feet, expect FL${fl.toString().padStart(3,'0')} ${initialClimbMin} minutes after departure,
+maintain ${initialAltitude} feet, expect FL${fl.toString().padStart(3,'0')} ${initialClimbMin} minutes after departure,
 departure runway ${departureRunway}, departure frequency ${depFreq},
 squawk ${squawk}
 Advise you have Information ${atisLetter} on board.`;
